@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # Servizio 1: Il nostro Bot Python
+  bot:
+    build: .  # Costruisci usando il Dockerfile qui presente
+    container_name: python-sentinel
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redisbox  # Deve combaciare col nome del servizio sotto
+      # I segreti li passiamo da un file .env (più sicuro!) o da shell
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    depends_on:
+      - redisbox  # Aspetta che il DB sia pronto prima di partire
+
+  # Servizio 2: Il Database (Immagine ufficiale)
+  redisbox:
+    image: redis:alpine
+    container_name: memoria-bot
+    restart: always
