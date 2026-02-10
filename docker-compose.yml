@@ -1,22 +1,37 @@
 version: '3.8'
 
 services:
-  # Servizio 1: Il nostro Bot Python
   bot:
-    build: .  # Costruisci usando il Dockerfile qui presente
+    build: .
     container_name: python-sentinel
     restart: always
     environment:
       - PYTHONUNBUFFERED=1
-      - REDIS_HOST=redisbox  # Deve combaciare col nome del servizio sotto
-      # I segreti li passiamo da un file .env (più sicuro!) o da shell
+      - REDIS_HOST=redisbox
+      # Docker Compose leggerà queste dal file .env sul server
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
     depends_on:
-      - redisbox  # Aspetta che il DB sia pronto prima di partire
+      - redisbox
 
-  # Servizio 2: Il Database (Immagine ufficiale)
   redisbox:
     image: redis:alpine
     container_name: memoria-bot
     restart: always
+    volumes:
+      - redis-data:/data  # Persistenza: se spegni Redis, i dati restano!
+
+  # --- NUOVO MEMBRO DELLA SQUADRA ---
+  dashboard:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    ports:
+      - "9443:9443"  # Apriamo la porta verso l'esterno
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Diamo a Portainer il permesso di parlare con Docker
+      - portainer_data:/data # Salviamo le password della dashboard
+
+volumes:
+  redis-data:
+  portainer_data:
